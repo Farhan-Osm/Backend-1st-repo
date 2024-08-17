@@ -53,7 +53,7 @@ const registerUser = asyncHandler(async (req, res) => {
         }) 
         if (existedUser){
 
-            throw new ApiError(409, "user with email or username already exists");
+            throw new ApiError(409, "This email or username already exists");
         }
 
           //  check for images, check for avatar
@@ -131,7 +131,7 @@ const loginUser =  asyncHandler(async (req, res) => {
      // access and refresh tokens
     const { accessToken, refreshToken } = await genrateAccessAndRefreshTokens(user._id);
 
-    const loggedInUser = await User.findById(user._id).select("-password, -refresh_token");
+    const loggedInUser = await User.findById(user._id).select("-password, -refreshToken");
 
      // send cookies
      const options = {
@@ -141,8 +141,8 @@ const loginUser =  asyncHandler(async (req, res) => {
 
      return res
      .status(200)
-     .cookie("access_token", accessToken , options)
-     .cookie("refresh_token", refreshToken, options)
+     .cookie("accessToken", accessToken , options)
+     .cookie("refreshToken", refreshToken, options)
      .json(
       new ApiResponse(
         200,{
@@ -157,8 +157,8 @@ const logoutUser = asyncHandler(async (req, res) => {
   await User.findByIdAndUpdate(
     req.user._id,
     {
-      $set: {
-        refreshToken: undefined,
+      $unset: {
+        refreshToken: 1
       }
     },
     {
@@ -205,16 +205,16 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
       secure: true
     }
   
-    const {accessToken, refreshToken} = await genrateAccessAndRefreshTokens(user._id)
+    const {accessToken, newRefreshToken} = await genrateAccessAndRefreshTokens(user._id)
   
     return res
     .status(200)
     .cookie("accessToken", accessToken, options)
-    .cookie("refreshToken", refreshToken, options)
+    .cookie("refreshToken", newRefreshToken, options)
     .json(
       new ApiResponse(
         200,
-        {accessToken, refreshToken},
+        {accessToken, refreshToken: newRefreshToken},
         "Access Token refreshed"
       )
     )

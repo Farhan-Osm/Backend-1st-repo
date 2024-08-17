@@ -4,9 +4,9 @@ import asyncHendler from "../utils/asyncHandler.js";
 import jwt from "jsonwebtoken";
 
 
-export const verifyJWT = asyncHendler(async(req, res, next) => {
+export const verifyJWT = asyncHendler(async (req, res, next) => {
   try {
-      const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "");
+      const token =  await req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "");
       if(!token) {
           throw new ApiError(401, "unauthorized request");
       }
@@ -20,7 +20,8 @@ export const verifyJWT = asyncHendler(async(req, res, next) => {
   
       req.user = user;
       next();
-  } catch (error) {
-    throw new ApiError(401, error?.message || "Invilid Access Token");
+  }
+  catch (error) {
+    throw new ApiError(401, error?.message || "Invilid Access Token please check");
   }
 })
